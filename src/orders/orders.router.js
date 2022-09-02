@@ -1,5 +1,16 @@
 const router = require("express").Router();
+const controller = require("./orders.controller")
 
-// TODO: Implement the /orders routes needed to make the tests pass
+//mounted to "/orders"
+router
+    .route("/")
+    .get(controller.list) //list
+    .post(controller.create) //create
+
+router
+    .route("/:orderId")
+    .get(controller.read) //read
+    .put(controller.update) //update
+    .delete(controller.destroy) //delete
 
 module.exports = router;
