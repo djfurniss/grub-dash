@@ -32,4 +32,4 @@ module.exports = {
     read, 
     update, 
     destroy,
-}
+};
