@@ -34,6 +34,14 @@ const hasValidPrice = (req, res, next) => {
     } else next();
 };
 
+const idsMatch = (req, res, next) => {
+    const { dishId } = req.params;
+    const {data: {id} = {} } = req.body
+    if (dishId !== id){
+        res.status(404).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`})
+    } else next();
+};
+
 // --- HANDLERS ---
 function list (req, res, next) {
     res.json({data: dishes})
@@ -76,7 +84,8 @@ module.exports = {
     ], 
     read: [dishExists, read], 
     update: [
-        dishExists, 
+        dishExists,
+        idsMatch, 
         hasProperty("name"),
         hasProperty("description"),
         hasProperty("price"),
