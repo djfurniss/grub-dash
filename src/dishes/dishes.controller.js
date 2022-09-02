@@ -43,30 +43,28 @@ const idsMatch = (req, res, next) => {
 };
 
 // --- HANDLERS ---
-function list (req, res, next) {
-    res.json({data: dishes})
-};
+function list (req, res) {res.json({data: dishes})};
 
-function create (req, res, next) {
-    const {data: {name, description, price, image_url} = {}} = req.body
-    //TODO: make sure all ^ data is valid
+function create (req, res) {
+    const { data: { name, description, price, image_url } = {} } = req.body
     const newDish = {
         id: nextId(), 
         name, description, price, image_url
     };
-    dishes.push(newDish)
-    res.status(201).json({data: newDish})
+    dishes.push(newDish);
+    res.status(201).json({data: newDish});
 };
 
-function read (req, res, next) {
-    res.json({data: res.locals.dish})
+function read (req, res) {
+    const foundDish = res.locals.dish
+    res.json({data: foundDish});
 };
 
-function update (req, res, next) {
-    foundDish = res.locals.dish
+function update (req, res) {
+    let foundDish = res.locals.dish
     const { dishId } = req.params
-    const {data: {name, description, price, image_url} = {}} = req.body
-    foundDish = {name, description, price, image_url, id:dishId}
+    const { data: { name, description, price, image_url } = {} } = req.body
+    foundDish = {name, description, price, image_url, id: dishId}
     res.json({data: foundDish});
 };
 

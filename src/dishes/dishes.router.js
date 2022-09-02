@@ -2,7 +2,7 @@ const router = require("express").Router();
 const controller = require("./dishes.controller");
 const methodNotAllowed = require("../errors/methodNotAllowed");
 
-//mouted to "/dishes"
+//mounted to "/dishes"
 router
     .route("/")
     .get(controller.list) //list
