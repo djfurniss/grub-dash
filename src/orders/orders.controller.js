@@ -10,50 +10,53 @@ const nextId = require("../utils/nextId");
 const orderExists = (req, res, next) => {
     const { orderId } = req.params
     const foundOrder = orders.find(order => order.id === orderId);
-    if (!foundOrder){
-        next({status: 404, message: `order ID : ${orderId} does not exist`});
-    } else {
+    if (foundOrder){
         res.locals.order = foundOrder
+        //from this validation onward, the response will have access to this particular order from the locals object without having to perform orders.find() again
         next();
+    } else {
+        next({status: 404, message: `order ID : ${orderId} does not exist`});
     };
 };
 
-const hasProperty = (property) => {
+const hasProperty = (property) => { //for create and update, individual properties are passed
+    // returning this functions ensures that the request can be passed through
     return function (req, res, next) {
         const { data = {} } = req.body
-        if(!data[property]){
+        //checks to make sure the data object is not missing a given property 
+        if(!data[property]){ //runs true also for empty strings
             res.status(400).json({error: `Order must include a ${property}`});
         } else next();
     };
 };
 
-const hasValidDishes = (req, res, next) => {
+const hasValidDishes = (req, res, next) => { //for create and update
     const { data: { dishes } = {} } = req.body
-    if (!Array.isArray(dishes) || !dishes.length){
+    if (!Array.isArray(dishes) || !dishes.length){ //if dishes is not an arr or has nothing in it
         res.status(400).json({error: 'Order must include at least one dish'});
     } else next();
 };
 
-const hasValidStatus = (req, res, next) => {
+const hasValidStatus = (req, res, next) => { //specifically for update
     const { data: { status } = {} } = req.body
-    if(!status || status == "invalid"){
+    if(!status || status == "invalid"){ //no status property at all, an empty string, or "invalid"
         res.status(400).json({error: `Order must have a status of pending, preparing, out-for-delivery, delivered`});
-    }else if (status == "delivered"){
+    }else if (status == "delivered"){ //if an order is already delivered, it cannot be updated
         res.status(400).json({error: 'A delivered order cannot be changed'});
     }else next();
 };
 
-const orderPending = (req, res, next) => {
-    const order = res.locals.order
+const orderPending = (req, res, next) => { //specifically for delete
+    const order = res.locals.order //assigned from orderExists validation
     if (order.status !== "pending"){
         res.status(400).json({error: "An order cannot be deleted unless it is pending"});
     }else next();
 };
 
-const dishHasQuantity = (req, res, next) => {
+const dishHasQuantity = (req, res, next) => {//after making sure dishes is an arr and has at least one dish, checks quantity
     const { data: { dishes } = {} } = req.body
     dishes.forEach((dish, index)=>{
-        if(!dish.quantity || dish.quantity <= 0 || !Number.isInteger(dish.quantity)){
+        if(!dish.quantity || dish.quantity < 0 || !Number.isInteger(dish.quantity)){//if quantity property is missing, less than 0, or isn't an integer
         res.status(400).json({error: `Dish ${index} must have a quantity that is an integer greater than 0`});
         };
     })
@@ -82,15 +85,15 @@ function create (req, res) {
 };
 
 function read (req, res) {
-    const foundOrder = res.locals.order
+    const foundOrder = res.locals.order //assigned from orderExists validation
     res.json({data: foundOrder});
 };
 
 function update (req, res) {
-    let foundOrder = res.locals.order
+    let foundOrder = res.locals.order //assigned from orderExists validation
     const { orderId } = req.params
     const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body
-    foundOrder = {deliverTo, mobileNumber, status, dishes, id: orderId}
+    foundOrder = {id: orderId, deliverTo, mobileNumber, status, dishes}
     res.json({data: foundOrder});
 };
 
