@@ -38,7 +38,7 @@ const idsMatch = (req, res, next) => {
     const { dishId } = req.params;
     const {data: {id} = {} } = req.body
     if (id && dishId !== id){
-        res.status(404).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`})
+        res.status(400).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`})
     } else next();
 };
 
@@ -52,10 +52,7 @@ function create (req, res, next) {
     //TODO: make sure all ^ data is valid
     const newDish = {
         id: nextId(), 
-        name,
-        description,
-        price, 
-        image_url
+        name, description, price, image_url
     };
     dishes.push(newDish)
     res.status(201).json({data: newDish})
@@ -67,9 +64,10 @@ function read (req, res, next) {
 
 function update (req, res, next) {
     foundDish = res.locals.dish
+    const { dishId } = req.params
     const {data: {name, description, price, image_url} = {}} = req.body
-    foundDish = {name, description, price, image_url}
-    res.json({data: foundDish})
+    foundDish = {name, description, price, image_url, id:dishId}
+    res.json({data: foundDish});
 };
 
 module.exports = {
