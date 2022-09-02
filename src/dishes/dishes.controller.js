@@ -37,7 +37,7 @@ const hasValidPrice = (req, res, next) => {
 const idsMatch = (req, res, next) => {
     const { dishId } = req.params;
     const {data: {id} = {} } = req.body
-    if (dishId !== id){
+    if (id && dishId !== id){
         res.status(404).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`})
     } else next();
 };
