@@ -63,12 +63,16 @@ const dishHasQuantity = (req, res, next) => {//after making sure dishes is an ar
     next();
 };
 
-const idsMatch = (req, res,next) => {
-    const { orderId } = req.params;
+const idsMatch = (req, res,next) => {//for update if id is in req.body
+    const orderId = res.locals.order.id
     const { data: { id } = {} } = req.body
-    if (id && orderId !== id){
+    //compares the (optional) id the user puts in the req.body with the orderId from res.locals
+    if (id && id === null){
+        next();
+    } else if (id && orderId !== id){
         res.status(400).json({error: `Order id does not match route id. Order: ${id}, Route: ${orderId}`});
     } else next();
+    //if the user didn't put an id in the body, the request can move on , the id will be returned in the data regardless if they included it or not... but if they do include it, idsMatch makes sure it's consistent with the foundOrder from req.locals and does NOT get overwitten
 };
 
 // --- HANDLERS ---
@@ -91,14 +95,14 @@ function read (req, res) {
 
 function update (req, res) {
     let foundOrder = res.locals.order //assigned from orderExists validation
-    const { orderId } = req.params
     const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body
-    foundOrder = {id: orderId, deliverTo, mobileNumber, status, dishes}
+        //reassigns/replaces values as needed, keeping the id the same
+    foundOrder = {id: foundOrder.id, deliverTo, mobileNumber, status, dishes}
     res.json({data: foundOrder});
 };
 
 function destroy (req, res) {
-    const { orderId } = req.params
+    const orderId = res.locals.order.id
     const orderToDel = orders.findIndex(order => order.id === orderId)
     orders.splice(orderToDel, 1);
     res.sendStatus(204);

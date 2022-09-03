@@ -33,18 +33,20 @@ const hasProperty = (property) => { //for create and update, individual properti
 const hasValidPrice = (req, res, next) => { //for create and update
     const { data: { price } = {} } = req.body
     if (price < 0 || !Number.isInteger(price)){//price needs to be an integer greater than 0
-        res.status(400).json({error: `Dish must have a price that is an integer greater than 0`})
+        res.status(400).json({error: `Dish must have a price that is an integer greater than 0`});
     } else next();
 };
 
 const idsMatch = (req, res, next) => {//for update if id is in req.body
-    const { dishId } = req.params;
+    const dishId = res.locals.dish.id
     const {data: {id} = {} } = req.body
-    //compares the (optional) id the user puts in the req.body with the dishId paramteter 
-    if (id && id !== dishId){
+    //compares the (optional) id the user puts in the req.body with the dishId from res.locals 
+    if (id && id === null){
+        next();
+    } else if (id && id !== dishId){
         res.status(400).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`});
     } else next();
-    //if the user didn't put an id in the body, the request can move on , the id will be returned in the data regardless if they included it or not... but if they do include it, idsMatch makes sure it's consistent with the foundDish
+    //if the user didn't put an id in the body, the request can move on , the id will be returned in the data regardless if they included it or not... but if they do include it, idsMatch makes sure it's consistent with the foundDish from res.locals and does NOT get overwitten
 };
 
 // --- HANDLERS ---
@@ -67,10 +69,9 @@ function read (req, res) {
 
 function update (req, res) {
     let foundDish = res.locals.dish //assigned from dishExists validation
-    const { dishId } = req.params
     const { data: { name, description, price, image_url } = {} } = req.body
         //reassigns/replaces values as needed, keeping the id the same
-    foundDish = {id: dishId, name, description, price, image_url}
+    foundDish = {id: foundDish.id, name, description, price, image_url}
     res.json({data: foundDish});
 };
 
