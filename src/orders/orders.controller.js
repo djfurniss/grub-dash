@@ -67,9 +67,10 @@ const idsMatch = (req, res,next) => {//for update if id is in req.body
     const orderId = res.locals.order.id
     const { data: { id } = {} } = req.body
     //compares the (optional) id the user puts in the req.body with the orderId from res.locals
-    if (id && id === null){
+    if (id && id === null){//if the id value is null, it can move on to the next piece of middleware because it will not effect the id value in the response
         next();
     } else if (id && orderId !== id){
+        //an error only results IF the user provided an id in the request body AND if it doesn't match. All other cases will return the proper id in the response body
         res.status(400).json({error: `Order id does not match route id. Order: ${id}, Route: ${orderId}`});
     } else next();
     //if the user didn't put an id in the body, the request can move on , the id will be returned in the data regardless if they included it or not... but if they do include it, idsMatch makes sure it's consistent with the foundOrder from req.locals and does NOT get overwitten
@@ -96,7 +97,7 @@ function read (req, res) {
 function update (req, res) {
     let foundOrder = res.locals.order //assigned from orderExists validation
     const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body
-        //reassigns/replaces values as needed, keeping the id the same
+        //reassigns/replaces values as needed, keeping the value of the stored data's id the same. An error only results (prior to this middleware) if the id passed in by the user does not match at all. In ALL other cases, the ORIGINAL id is always returned and never overwritten
     foundOrder = {id: foundOrder.id, deliverTo, mobileNumber, status, dishes}
     res.json({data: foundOrder});
 };
@@ -130,7 +131,7 @@ module.exports = {
         hasValidStatus,
         hasValidDishes,
         dishHasQuantity,
-        idsMatch,
+        idsMatch, //this piece of middleware makes sure the id cannot be overwitten
         update
     ], 
     destroy: [

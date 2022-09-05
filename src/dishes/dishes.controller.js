@@ -39,11 +39,12 @@ const hasValidPrice = (req, res, next) => { //for create and update
 
 const idsMatch = (req, res, next) => {//for update if id is in req.body
     const dishId = res.locals.dish.id
-    const {data: {id} = {} } = req.body
+    const { data: { id } = {} } = req.body
     //compares the (optional) id the user puts in the req.body with the dishId from res.locals 
-    if (id && id === null){
+    if (id && id === null){//if the id value is null, it can move on to the next piece of middleware because it will not effect the id value in the response
         next();
     } else if (id && id !== dishId){
+        //an error only results IF the user provided an id in the request body AND if it doesn't match. All other cases will return the proper id in the response body
         res.status(400).json({error: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`});
     } else next();
     //if the user didn't put an id in the body, the request can move on , the id will be returned in the data regardless if they included it or not... but if they do include it, idsMatch makes sure it's consistent with the foundDish from res.locals and does NOT get overwitten
@@ -70,7 +71,7 @@ function read (req, res) {
 function update (req, res) {
     let foundDish = res.locals.dish //assigned from dishExists validation
     const { data: { name, description, price, image_url } = {} } = req.body
-        //reassigns/replaces values as needed, keeping the id the same
+        //reassigns/replaces values as needed, keeping the value of the stored data's id the same. An error only results (prior to this middleware) if the id passed in by the user does not match at all. In ALL other cases, the ORIGINAL id is returned and never overwritten
     foundDish = {id: foundDish.id, name, description, price, image_url}
     res.json({data: foundDish});
 };
@@ -88,11 +89,11 @@ module.exports = {
     read: [dishExists, read], 
     update: [
         dishExists,
-        idsMatch, 
         hasProperty("name"),
         hasProperty("description"),
         hasProperty("price"),
         hasProperty("image_url"),
         hasValidPrice,
+        idsMatch, //this piece of middleware makes sure the id cannot be overwitten
         update],
 };
