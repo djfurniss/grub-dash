@@ -1,6 +1,6 @@
 # example netlify.toml
 [build]
-  command = "npm run docker:build"
+  command = "npm start"
   functions = "netlify/functions"
   publish = "."
 
