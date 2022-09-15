@@ -9,6 +9,7 @@ exports.up = function(knex) {
     table.text("dish_description")
     table.integer("dish_price")
     table.string("dish_img_url")
+    table.timestamps(true, true)
   })
 };
 
