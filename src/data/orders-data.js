@@ -1,3 +1,4 @@
+//TODO - make this file into a knex seed file
 module.exports = [
   {
     id: "f6069a542257054114138301947672ba",
