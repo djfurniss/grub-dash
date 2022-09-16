@@ -1,7 +1,7 @@
 const path = require("path");
 
 // --- DATA ---
-const orders = require(path.resolve("src/data/orders-data"));
+const orders = []
 
 // this function assigns ID's when necessary
 const nextId = require("../utils/nextId");

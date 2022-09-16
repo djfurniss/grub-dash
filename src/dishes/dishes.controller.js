@@ -1,7 +1,5 @@
 const path = require("path");
-
-// --- DATA ---
-const dishes = require(path.resolve("src/data/dishes-data"));
+const service = require("./dishes.service")
 
 // this function assigns ID's when necessary
 const nextId = require("../utils/nextId");
@@ -31,8 +29,8 @@ const hasProperty = (property) => { //for create and update, individual properti
 };
 
 const hasValidPrice = (req, res, next) => { //for create and update
-    const { data: { price } = {} } = req.body
-    if (price < 0 || !Number.isInteger(price)){//price needs to be an integer greater than 0
+    const { data: { dish_price } = {} } = req.body
+    if (dish_price < 0 || !Number.isInteger(dish_price)){//price needs to be an integer greater than 0
         res.status(400).json({error: `Dish must have a price that is an integer greater than 0`});
     } else next();
 };
@@ -51,15 +49,17 @@ const idsMatch = (req, res, next) => {//for update if id is in req.body
 };
 
 // --- HANDLERS ---
-function list (req, res) {res.json({data: dishes})};
+async function list (req, res) {
+    const data = await service.list()
+    res.json({ data })
+};
 
-function create (req, res) {
-    const { data: { name, description, price, image_url } = {} } = req.body
-    const newDish = {
-        id: nextId(), 
-        name, description, price, image_url
+async function create (req, res) {
+    const { data: { dish_name, dish_description, dish_price, dish_img_url } = {} } = req.body
+    const newDish = { 
+        dish_name, dish_description, dish_price, dish_img_url
     };
-    dishes.push(newDish);
+    await service.create(newDish)
     res.status(201).json({data: newDish});
 };
 
@@ -79,20 +79,20 @@ function update (req, res) {
 module.exports = {
     list, 
     create: [
-        hasProperty("name"),
-        hasProperty("description"),
-        hasProperty("price"),
-        hasProperty("image_url"),
+        hasProperty("dish_name"),
+        hasProperty("dish_description"),
+        hasProperty("dish_price"),
+        hasProperty("dish_img_url"),
         hasValidPrice,
         create
     ], 
     read: [dishExists, read], 
     update: [
         dishExists,
-        hasProperty("name"),
-        hasProperty("description"),
-        hasProperty("price"),
-        hasProperty("image_url"),
+        hasProperty("dish_name"),
+        hasProperty("dish_description"),
+        hasProperty("dish_price"),
+        hasProperty("dish_img_url"),
         hasValidPrice,
         idsMatch, //this piece of middleware makes sure the id cannot be overwitten
         update],
